@@ -1,7 +1,7 @@
 title: Open Data Portal
 description: A forkable open data portal for small agencies.
-baseurl: ""
-url: ""
+baseurl: "/my-project"
+url: "https://sweeneyeamonn.github.io"
 
 # Navigation
 navigation:
