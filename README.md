@@ -165,7 +165,8 @@ Staff uploads CSV to datasets/
 GitHub Action: generate-previews
   - pandas reads CSV
   - Jinja2 renders Bootstrap table HTML
-  - Commits _includes/previews/<name>.html [skip ci]
+  - Updates updated: date in matching _datasets/<name>.md
+  - Commits _includes/previews/<name>.html + _datasets/<name>.md [skip ci]
         |
         v
 GitHub Action: pages (next push or manual trigger)
@@ -173,6 +174,102 @@ GitHub Action: pages (next push or manual trigger)
   - dataset layout includes previews/<name>.html dynamically
   - Deployed to GitHub Pages
 ```
+
+---
+
+## How It All Fits Together
+
+This portal is built on three standard tools — **GitHub**, **Jekyll**, and **GitHub Actions** — wired together so that uploading a spreadsheet is all it takes to publish a dataset page. There is no server to maintain, no database, and no custom application to update.
+
+### The three building blocks
+
+**GitHub as a content store**
+
+Everything lives in a single GitHub repository. The repository holds two kinds of content side by side:
+
+- *Data files* — the raw CSV spreadsheets in the `datasets/` folder
+- *Metadata files* — one Markdown file per dataset in the `_datasets/` folder, containing the title, description, organization, category, license, maintainer, and a link back to the CSV
+
+Staff interact with both through the GitHub web interface, the same way you would edit a document in Google Drive. No command line is required.
+
+**Jekyll as a static site generator**
+
+Jekyll reads the metadata files and the layout templates and produces a complete set of HTML pages — one for each dataset, one for each organization, one for each category, plus the homepage and listing pages. The output is a folder of plain `.html` files that can be served from anywhere with no server-side processing.
+
+Jekyll's *collections* feature is what makes the dataset/organization/category structure possible. Each folder starting with an underscore (`_datasets/`, `_organizations/`, `_dataset_categories/`) is a collection: Jekyll loops over the files in it and applies the appropriate layout template to each one automatically.
+
+**GitHub Actions as the automation layer**
+
+Two automated workflows run in the background:
+
+1. `generate-previews` — triggered whenever a file changes inside `datasets/`. It reads every CSV, generates an HTML table snippet showing the first 25 rows, updates the `updated:` date in the matching metadata file, and commits everything back to the repository.
+
+2. `pages` — triggered on every push to `main`. It runs Jekyll to rebuild the full site and deploys the result to GitHub Pages.
+
+Because the first workflow commits with the message suffix `[skip ci]`, GitHub Actions knows not to trigger itself again, preventing an infinite loop.
+
+---
+
+### The dataset page in detail
+
+Each dataset page is assembled from three separate pieces at build time:
+
+```
+_datasets/annual-budget.md        ← metadata (title, org, license, etc.)
+         +
+_includes/previews/annual-budget.html   ← auto-generated table from the CSV
+         +
+_layouts/dataset.html             ← the HTML template that holds it all together
+         =
+_site/datasets/annual-budget/index.html  ← the finished page
+```
+
+The connection between a metadata file and its preview table is a single field in the metadata file's front matter:
+
+```yaml
+preview: annual-budget
+```
+
+Jekyll's layout uses this value to include the matching snippet:
+
+```liquid
+{% assign _preview_path = "previews/" | append: page.preview | append: ".html" %}
+{% include {{ _preview_path }} %}
+```
+
+If no preview file exists yet (for example, immediately after creating a new metadata file but before the Action has run), the `{% if page.preview %}` guard prevents a build error — the page simply renders without the table.
+
+---
+
+### The preview generation pipeline
+
+`scripts/generate_previews.py` is a short Python script that runs inside GitHub Actions. For each CSV it finds in `datasets/`:
+
+1. Checks the file is not empty
+2. Reads it with pandas, preserving leading zeros and literal "N/A" strings
+3. Truncates cells longer than 80 characters so wide text does not break the layout
+4. Renders a Bootstrap-styled HTML table showing up to 25 rows
+5. Writes the result to `_includes/previews/<name>.html`
+6. Updates the `updated:` field in the matching `_datasets/<name>.md` to today's date
+
+If the file is empty, or cannot be parsed, the script writes a visible warning or error message in place of the table rather than silently failing. If any file produces a fatal error, the script exits with a non-zero code so the GitHub Actions step is marked as failed.
+
+---
+
+### Updating a dataset
+
+To replace an existing dataset with newer data, staff simply upload a new CSV with the same filename. The Action will:
+
+- Regenerate the preview table from the new data
+- Set `updated:` in the metadata file to today's date automatically
+
+No editing of the metadata file is needed.
+
+---
+
+### The naming convention
+
+The link between a CSV and its dataset page is the filename stem — the part without the extension. `annual-budget.csv`, `_datasets/annual-budget.md`, `_includes/previews/annual-budget.html`, and `preview: annual-budget` in the front matter all refer to the same dataset. Keeping these in sync is the one rule staff need to follow when creating a new dataset.
 
 ---
 
