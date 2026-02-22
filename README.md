@@ -273,6 +273,112 @@ The link between a CSV and its dataset page is the filename stem — the part wi
 
 ---
 
+## Adding, Removing, or Renaming Metadata Fields
+
+Every dataset page has a sidebar showing fields like Organization, Category, License, and so on. The list of fields shown, and their display labels, is controlled by a single file: `_data/schemas/default.yml`.
+
+### How the sidebar works
+
+`_data/schemas/default.yml` contains an ordered list of field definitions:
+
+```yaml
+fields:
+  - key: organization
+    label: Organization
+  - key: license
+    label: License
+```
+
+- `key` is the front matter field name in the dataset's `.md` file
+- `label` is the human-readable heading shown in the sidebar
+
+The dataset layout loops over this list. For each entry, it looks up `page[key]` — if the dataset's front matter has a value for that key, the row is shown; if not, the row is silently skipped. This means fields are always **opt-in per dataset**: adding a field to the schema does not force every dataset to show it.
+
+---
+
+### Adding a new field
+
+**Step 1** — Add it to the schema file.
+
+Open `_data/schemas/default.yml` and add a new entry:
+
+```yaml
+  - key: frequency
+    label: Update Frequency
+```
+
+The sidebar will now show "Update Frequency" on any dataset page that has `frequency:` in its front matter. Datasets without it are unaffected.
+
+**Step 2** — Add the value to individual dataset files.
+
+Open the relevant `_datasets/<name>.md` file and add the field:
+
+```yaml
+frequency: Monthly
+```
+
+That is all. No template changes, no code changes — Jekyll picks it up automatically.
+
+---
+
+### Removing a field
+
+To stop showing a field in the sidebar, delete its entry from `_data/schemas/default.yml`. The field can remain in individual dataset `.md` files without causing any harm — it just will not be displayed.
+
+To remove the value from a dataset file too, delete the corresponding line from that file's front matter.
+
+---
+
+### Renaming a field label
+
+To change how a label reads in the sidebar (for example, "Organisation" instead of "Organization"), edit the `label` value in `_data/schemas/default.yml`:
+
+```yaml
+  - key: organization
+    label: Organisation
+```
+
+The `key` must stay the same because it refers to the front matter field name in every dataset file. Only the `label` changes.
+
+---
+
+### Adding a new organization
+
+1. Create a new file in `_organizations/`, e.g. `_organizations/revenue-commissioners.md`:
+
+```yaml
+---
+title: Revenue Commissioners
+description: Ireland's tax and customs authority.
+website: https://www.revenue.ie
+---
+```
+
+2. The organization will appear on the Organizations page and its title can now be used as the `organization:` value in any dataset's front matter.
+
+---
+
+### Adding a new category
+
+1. Create a new file in `_dataset_categories/`, e.g. `_dataset_categories/climate.md`:
+
+```yaml
+---
+title: Climate
+description: Climate data, emissions, and environmental indicators.
+---
+```
+
+2. The category will appear on the Categories page. Use its `title` exactly (including capitalisation) as the `category:` value in dataset front matter.
+
+---
+
+### Removing an organization or category
+
+Delete the relevant file from `_organizations/` or `_dataset_categories/`. Any datasets that still reference it via `organization:` or `category:` will continue to display the text value in their sidebar — they just will not link to a dedicated org/category page, since that page no longer exists. To clean up fully, update those dataset files to reference a different organization or category.
+
+---
+
 ## Customization
 
 - **Site title & description** — edit `_config.yml`
