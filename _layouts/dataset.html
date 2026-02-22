@@ -2,6 +2,27 @@
 layout: default
 ---
 
+{% comment %}Find first CSV resource — used by XLSX download and explorer{% endcomment %}
+{% assign csv_url = "" %}
+{% for resource in page.resources %}
+  {% assign _fmt = resource.format | downcase %}
+  {% if _fmt == "csv" or resource.url contains ".csv" %}
+    {% assign csv_url = resource.url %}
+  {% endif %}
+{% endfor %}
+
+<!-- Perspective styles (dataset pages only) -->
+<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer@2.10.1/dist/css/themes.css">
+<style>
+  perspective-viewer {
+    height: 550px;
+    border: 1px solid var(--gi-gray-200);
+    border-radius: .375rem;
+    overflow: hidden;
+  }
+</style>
+
 <div class="row">
   <!-- Main content -->
   <div class="col-lg-8">
@@ -31,8 +52,8 @@ layout: default
              target="_blank" rel="noopener noreferrer">
             Download CSV
           </a>
-          {% assign fmt = resource.format | downcase %}
-          {% if fmt == "csv" or resource.url contains ".csv" %}
+          {% assign _fmt2 = resource.format | downcase %}
+          {% if _fmt2 == "csv" or resource.url contains ".csv" %}
           <button class="btn btn-sm btn-outline-success"
                   data-csv-url="{{ resource.url }}"
                   data-filename="{{ page.slug }}.xlsx"
@@ -94,20 +115,107 @@ layout: default
   </div>
 </div>
 
-<!-- SheetJS — loaded only on dataset pages -->
+<!-- Data explorer (full width, below main row) -->
+{% if csv_url != "" %}
+<div class="mt-4 mb-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="h5 mb-0">Explore Data</h2>
+    <button id="explorerToggle" class="btn btn-sm btn-outline-primary" onclick="toggleExplorer()">
+      Open Explorer
+    </button>
+  </div>
+  <div id="explorerSection" style="display:none">
+    <div id="explorerLoading" class="text-muted small py-2">
+      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+      Loading data&hellip;
+    </div>
+    <perspective-viewer id="perspectiveViewer" class="d-none"></perspective-viewer>
+  </div>
+</div>
+{% endif %}
+
+<!-- SheetJS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
   integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA=="
   crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+<!-- Perspective (ES modules, dataset pages only) -->
+{% if csv_url != "" %}
+<script type="module">
+  import perspective from "https://cdn.jsdelivr.net/npm/@finos/perspective@2.10.1/dist/cdn/perspective.js";
+  import "https://cdn.jsdelivr.net/npm/@finos/perspective-viewer@2.10.1/dist/cdn/perspective-viewer.js";
+  import "https://cdn.jsdelivr.net/npm/@finos/perspective-viewer-datagrid@2.10.1/dist/cdn/perspective-viewer-datagrid.js";
+  import "https://cdn.jsdelivr.net/npm/@finos/perspective-viewer-d3fc@2.10.1/dist/cdn/perspective-viewer-d3fc.js";
+
+  var _explorerReady = false;
+  var _csvUrl = {{ csv_url | jsonify }};
+
+  async function _loadExplorer() {
+    try {
+      const resp = await fetch(_csvUrl);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const csv = await resp.text();
+
+      const worker = await perspective.worker();
+      const table  = await worker.table(csv);
+
+      const viewer = document.getElementById('perspectiveViewer');
+      await viewer.load(table);
+
+      // Restyle internals via shadow DOM injection
+      try {
+        const sr = viewer.shadowRoot;
+        if (sr) {
+          // Hide watermark
+          const logo = sr.querySelector('.psp-logo');
+          if (logo) logo.style.display = 'none';
+
+          // Move settings panel from right side to top
+          const style = document.createElement('style');
+          style.textContent = `
+            #app_panel {
+              flex-direction: column !important;
+            }
+            #settings_panel {
+              width: 100% !important;
+              min-width: 0 !important;
+              height: auto !important;
+              max-height: 320px !important;
+              overflow-y: auto !important;
+              border-right: none !important;
+              border-bottom: 1px solid #d8dadf !important;
+            }
+            #main_column {
+              width: 100% !important;
+              flex: 1 1 auto !important;
+            }
+          `;
+          sr.appendChild(style);
+        }
+      } catch(e) {}
+
+      document.getElementById('explorerLoading').style.display = 'none';
+      viewer.classList.remove('d-none');
+      _explorerReady = true;
+    } catch(e) {
+      document.getElementById('explorerLoading').outerHTML =
+        '<div class="alert alert-warning">Could not load data for the explorer: ' + e.message + '</div>';
+    }
+  }
+
+  // Expose to the toggle button (non-module scope)
+  window._loadExplorer = _loadExplorer;
+</script>
+{% endif %}
+
 <script>
+/* ── XLSX download ───────────────────────────────────────────────────────── */
 function downloadXlsx(btn) {
   var url = btn.getAttribute('data-csv-url');
   var filename = btn.getAttribute('data-filename');
   var original = btn.textContent;
-
   btn.disabled = true;
   btn.textContent = 'Preparing\u2026';
-
   fetch(url)
     .then(function(r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -124,5 +232,21 @@ function downloadXlsx(btn) {
       btn.disabled = false;
       btn.textContent = original;
     });
+}
+
+/* ── Explorer toggle ─────────────────────────────────────────────────────── */
+var _explorerOpen = false;
+
+function toggleExplorer() {
+  var section = document.getElementById('explorerSection');
+  var btn     = document.getElementById('explorerToggle');
+  _explorerOpen = !_explorerOpen;
+
+  section.style.display = _explorerOpen ? 'block' : 'none';
+  btn.textContent = _explorerOpen ? 'Close Explorer' : 'Open Explorer';
+
+  if (_explorerOpen && window._loadExplorer && !window._explorerReady) {
+    window._loadExplorer();
+  }
 }
 </script>

@@ -18,7 +18,7 @@ tags:
 preview: annual-budget
 resources:
   - name: Annual Budget CSV
-    url: https://raw.githubusercontent.com/YOUR_ORG/YOUR_REPO/main/datasets/annual-budget.csv
+    url: https://raw.githubusercontent.com/sweeneyeamonn/my-project/main/datasets/annual-budget.csv
     format: CSV
     description: Full budget dataset in comma-separated values format
 ---

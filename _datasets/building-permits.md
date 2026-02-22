@@ -19,7 +19,7 @@ tags:
 preview: building-permits
 resources:
   - name: Building Permits CSV
-    url: https://raw.githubusercontent.com/YOUR_ORG/YOUR_REPO/main/datasets/building-permits.csv
+    url: https://raw.githubusercontent.com/sweeneyeamonn/my-project/main/datasets/building-permits.csv
     format: CSV
     description: Full permit dataset in comma-separated values format
 ---
