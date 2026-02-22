@@ -7,7 +7,9 @@ _includes/previews/<stem>.html for Jekyll to include on dataset pages.
 
 import html
 import logging
+import re
 import sys
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
@@ -19,6 +21,7 @@ from jinja2 import Environment, BaseLoader
 
 DATASETS_DIR = Path("datasets")
 OUTPUT_DIR = Path("_includes/previews")
+METADATA_DIR = Path("_datasets")
 MAX_ROWS = 25
 MAX_CELL_LEN = 80
 
@@ -79,6 +82,28 @@ def _truncate(value: str) -> str:
     if len(value) > MAX_CELL_LEN:
         value = value[:MAX_CELL_LEN] + "…"
     return html.escape(value)
+
+
+def update_metadata_date(stem: str) -> None:
+    """
+    Update the `updated:` field in _datasets/<stem>.md to today's date.
+    Silently skips if the file doesn't exist or has no `updated:` line.
+    """
+    md_path = METADATA_DIR / f"{stem}.md"
+    if not md_path.exists():
+        return
+
+    today = date.today().isoformat()  # YYYY-MM-DD
+    original = md_path.read_text(encoding="utf-8")
+    updated = re.sub(
+        r"^(updated:\s*).*$",
+        rf"\g<1>{today}",
+        original,
+        flags=re.MULTILINE,
+    )
+    if updated != original:
+        md_path.write_text(updated, encoding="utf-8")
+        log.info("Updated 'updated:' date in %s → %s", md_path, today)
 
 
 def process_csv(csv_path: Path, output_dir: Path) -> bool:
@@ -149,7 +174,9 @@ def main() -> int:
     errors = 0
     for csv_path in csv_files:
         success = process_csv(csv_path, output_dir)
-        if not success:
+        if success:
+            update_metadata_date(csv_path.stem)
+        else:
             errors += 1
 
     log.info("Done. %d file(s) processed, %d error(s).", len(csv_files), errors)
