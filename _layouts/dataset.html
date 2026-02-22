@@ -2,27 +2,7 @@
 layout: default
 ---
 
-{% comment %}Find first CSV resource — used by XLSX download and pivot table{% endcomment %}
-{% assign csv_url = "" %}
-{% for resource in page.resources %}
-  {% assign _fmt = resource.format | downcase %}
-  {% if _fmt == "csv" or resource.url contains ".csv" %}
-    {% assign csv_url = resource.url %}
-  {% endif %}
-{% endfor %}
 
-<!-- PivotTable.js styles (dataset pages only) -->
-<link rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/jquery-ui.min.css">
-<link rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">
-<style>
-  .pivot-wrapper { overflow-x: auto; }
-  .pvtUi, .pvtUi select, .pvtTable { font-family: 'Lato', Arial, sans-serif; font-size: .85rem !important; }
-  .pvtTable { border-collapse: collapse; }
-  .pvtAxisContainer, .pvtVals { background: var(--gi-gray-50); border-color: var(--gi-gray-200) !important; }
-  .pvtFilterBox { z-index: 1050; }
-</style>
 
 <div class="row">
   <!-- Main content -->
@@ -116,46 +96,12 @@ layout: default
   </div>
 </div>
 
-<!-- Pivot table explorer (full width, below main row) -->
-{% if csv_url != "" %}
-<div class="mt-4 mb-4">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="h5 mb-0">Explore Data</h2>
-    <button id="pivotToggle" class="btn btn-sm btn-outline-primary" onclick="togglePivot()">
-      Open Pivot Table
-    </button>
-  </div>
-  <div id="pivotSection" style="display:none">
-    <p class="text-muted small mb-3">
-      Drag field names into the row and column areas to pivot and summarise the data.
-    </p>
-    <div id="pivotLoading" class="text-muted small py-2">
-      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-      Loading data&hellip;
-    </div>
-    <div id="pivotOutput" class="pivot-wrapper"></div>
-  </div>
-</div>
-{% endif %}
 
 <!-- SheetJS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
   integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA=="
   crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-<!-- jQuery + jQuery UI (PivotTable.js dependencies) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
-  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"
-  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-<!-- PapaParse (CSV parser) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"
-  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-<!-- PivotTable.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.js"
-  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <script>
 /* ── XLSX download ───────────────────────────────────────────────────────── */
@@ -183,41 +129,4 @@ function downloadXlsx(btn) {
     });
 }
 
-/* ── Pivot table ─────────────────────────────────────────────────────────── */
-{% if csv_url != "" %}
-var _pivotCsvUrl = {{ csv_url | jsonify }};
-var _pivotReady  = false;
-
-function togglePivot() {
-  var section = document.getElementById('pivotSection');
-  var btn     = document.getElementById('pivotToggle');
-  var opening = section.style.display === 'none';
-
-  section.style.display = opening ? 'block' : 'none';
-  btn.textContent = opening ? 'Close Pivot Table' : 'Open Pivot Table';
-
-  if (opening && !_pivotReady) { _loadPivot(); }
-}
-
-function _loadPivot() {
-  Papa.parse(_pivotCsvUrl, {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
-    complete: function(results) {
-      document.getElementById('pivotLoading').style.display = 'none';
-      $('#pivotOutput').pivotUI(results.data, {
-        rendererName:    'Table',
-        aggregatorName:  'Count',
-        unusedAttrsVertical: false
-      });
-      _pivotReady = true;
-    },
-    error: function() {
-      document.getElementById('pivotLoading').outerHTML =
-        '<div class="alert alert-warning">Could not load data for the pivot table.</div>';
-    }
-  });
-}
-{% endif %}
 </script>
