@@ -1,0 +1,62 @@
+---
+layout: default
+title: Home
+---
+
+<!-- Hero -->
+<div class="hero text-white rounded-3 p-5 mb-5">
+  <div class="py-2">
+    <h1 class="display-5 fw-bold">
+      <i class="bi bi-database-fill me-2"></i>Open Data Portal
+    </h1>
+    <p class="col-md-8 fs-4">
+      Explore {{ site.datasets | size }} public datasets from {{ site.organizations | size }}
+      organizations. Download, analyze, and build with open data.
+    </p>
+    <a href="{{ '/datasets/' | relative_url }}" class="btn btn-light btn-lg me-2">
+      <i class="bi bi-search me-1"></i>Browse Datasets
+    </a>
+    <a href="{{ '/organizations/' | relative_url }}" class="btn btn-outline-light btn-lg">
+      <i class="bi bi-building me-1"></i>View Organizations
+    </a>
+  </div>
+</div>
+
+<!-- Stats row -->
+<div class="row g-4 mb-5 text-center">
+  <div class="col-md-4">
+    <div class="card border-0 bg-light h-100">
+      <div class="card-body py-4">
+        <div class="display-4 fw-bold text-primary">{{ site.datasets | size }}</div>
+        <div class="text-muted">Datasets</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 bg-light h-100">
+      <div class="card-body py-4">
+        <div class="display-4 fw-bold text-primary">{{ site.organizations | size }}</div>
+        <div class="text-muted">Organizations</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 bg-light h-100">
+      <div class="card-body py-4">
+        <div class="display-4 fw-bold text-primary">{{ site.dataset_categories | size }}</div>
+        <div class="text-muted">Categories</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent datasets -->
+<h2 class="h4 mb-3">Recent Datasets</h2>
+{% assign recent = site.datasets | sort: "date" | reverse | limit: 6 %}
+{% include datasets.html datasets=recent %}
+
+<div class="text-center mt-4">
+  <a href="{{ '/datasets/' | relative_url }}" class="btn btn-primary">
+    View All Datasets <i class="bi bi-arrow-right ms-1"></i>
+  </a>
+</div>

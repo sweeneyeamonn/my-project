@@ -1,0 +1,19 @@
+---
+layout: default
+---
+
+<div class="mb-4">
+  <h1>{{ page.title }}</h1>
+  {% if page.description %}
+  <p class="lead text-muted">{{ page.description }}</p>
+  {% endif %}
+</div>
+
+{% assign cat_datasets = site.datasets | where: "category", page.title %}
+
+<h2 class="h4 mb-3">
+  Datasets
+  <span class="badge text-bg-secondary ms-1">{{ cat_datasets.size }}</span>
+</h2>
+
+{% include datasets.html datasets=cat_datasets %}

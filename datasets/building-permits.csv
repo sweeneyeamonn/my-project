@@ -1,0 +1,13 @@
+permit_number,type,address,contractor,valuation,issue_date,status
+BP-2024-00142,New Construction,1450 Oak Street,Apex Builders LLC,485000,2024-01-08,Issued
+BP-2024-00198,Renovation,723 Maple Avenue,Green Renovations Inc,125000,2024-01-15,Issued
+BP-2024-00215,Demolition,88 Commerce Blvd,City Wrecking Co,45000,2024-01-22,Finalled
+BP-2024-00301,New Construction,2200 Riverside Drive,Summit Construction,1250000,2024-02-03,Issued
+BP-2024-00342,Addition,415 Pine Street,HomeBuilt LLC,78000,2024-02-14,Under Review
+BP-2024-00389,Renovation,900 First Avenue,Legacy Contractors,230000,2024-02-28,Issued
+BP-2024-00412,New Construction,67 Harbor View Lane,Coastal Homes Inc,675000,2024-03-05,Issued
+BP-2024-00455,Renovation,1833 Broadway,Urban Rebuild Corp,195000,2024-03-18,Under Review
+BP-2024-00501,Addition,502 Elm Court,Family First Builders,55000,2024-04-01,Expired
+BP-2024-00547,New Construction,3100 Tech Park Drive,Commercial Dev Group,3400000,2024-04-10,Issued
+BP-2024-00589,Renovation,147 Central Plaza,N/A,88000,2024-04-22,Under Review
+BP-2024-00623,Demolition,999 Industrial Way,Metro Demolition LLC,62000,2024-05-06,Issued

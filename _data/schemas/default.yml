@@ -1,0 +1,21 @@
+# Fields displayed in the metadata sidebar on dataset pages.
+# Each field maps a front-matter key to a human-readable label.
+fields:
+  - key: organization
+    label: Organization
+  - key: category
+    label: Category
+  - key: license
+    label: License
+  - key: maintainer
+    label: Maintainer
+  - key: maintainer_email
+    label: Maintainer Email
+  - key: updated
+    label: Last Updated
+  - key: created
+    label: Created
+  - key: version
+    label: Version
+  - key: tags
+    label: Tags

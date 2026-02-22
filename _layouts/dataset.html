@@ -1,0 +1,81 @@
+---
+layout: default
+---
+
+<div class="row">
+  <!-- Main content -->
+  <div class="col-lg-8">
+    <h1 class="mb-1">{{ page.title }}</h1>
+    {% if page.description %}
+    <p class="lead text-muted mb-4">{{ page.description }}</p>
+    {% endif %}
+
+    <!-- Resources -->
+    {% if page.resources %}
+    <h2 class="h5 mb-3">Resources</h2>
+    <div class="list-group mb-4">
+      {% for resource in page.resources %}
+      <a href="{{ resource.url }}" class="list-group-item list-group-item-action d-flex align-items-center gap-3"
+         target="_blank" rel="noopener noreferrer">
+        <i class="bi bi-file-earmark-arrow-down fs-4 text-primary"></i>
+        <div>
+          <div class="fw-semibold">{{ resource.name | default: resource.url }}</div>
+          {% if resource.format %}
+          <small class="text-muted">Format: {{ resource.format }}</small>
+          {% endif %}
+          {% if resource.description %}
+          <small class="text-muted d-block">{{ resource.description }}</small>
+          {% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Data preview -->
+    {% if page.preview %}
+      {% assign _preview_path = "previews/" | append: page.preview | append: ".html" %}
+      <h2 class="h5 mb-3">Data Preview</h2>
+      <div class="preview-table-wrapper mb-4">
+        {% include {{ _preview_path }} %}
+      </div>
+    {% endif %}
+
+    <!-- Page body content (if any) -->
+    {% if content != "" %}
+    <div class="mt-4">{{ content }}</div>
+    {% endif %}
+  </div>
+
+  <!-- Sidebar -->
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header fw-semibold">Dataset Information</div>
+      <div class="card-body p-0">
+        <table class="table table-sm meta-table mb-0">
+          <tbody>
+            {% for field in site.data.schemas.default.fields %}
+              {% assign field_value = page[field.key] %}
+              {% if field_value %}
+              <tr>
+                <th class="ps-3 py-2 text-muted fw-normal">{{ field.label }}</th>
+                <td class="pe-3 py-2">
+                  {% if field.key == "maintainer_email" %}
+                    <a href="mailto:{{ field_value }}">{{ field_value }}</a>
+                  {% elsif field_value contains "http" %}
+                    <a href="{{ field_value }}" target="_blank" rel="noopener noreferrer">{{ field_value }}</a>
+                  {% elsif field_value.first %}
+                    {{ field_value | join: ", " }}
+                  {% else %}
+                    {{ field_value }}
+                  {% endif %}
+                </td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

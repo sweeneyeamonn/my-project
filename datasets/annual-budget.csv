@@ -1,0 +1,15 @@
+department,fund,appropriation,expenditure,variance,fiscal_year
+City Manager,General Fund,1250000,1187432,62568,2024
+City Attorney,General Fund,980000,954210,25790,2024
+Finance,General Fund,2100000,2034567,65433,2024
+Human Resources,General Fund,875000,861234,13766,2024
+Information Technology,General Fund,3400000,3312890,87110,2024
+Public Works,General Fund,8750000,8623411,126589,2024
+Parks & Recreation,General Fund,4200000,4178654,21346,2024
+Police Department,General Fund,22500000,22341876,158124,2024
+Fire Department,General Fund,18700000,18654321,45679,2024
+Library,General Fund,3100000,3087654,12346,2024
+Planning Department,General Fund,1650000,1612345,37655,2024
+Community Development,Housing Fund,5400000,5287654,112346,2024
+Transportation,Road Fund,12000000,11876543,123457,2024
+Capital Projects,Capital Fund,35000000,32456789,2543211,2024

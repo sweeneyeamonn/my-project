@@ -1,0 +1,67 @@
+title: Open Data Portal
+description: A forkable open data portal for small agencies.
+baseurl: ""
+url: ""
+
+# Navigation
+navigation:
+  - title: Datasets
+    url: /datasets/
+  - title: Organizations
+    url: /organizations/
+  - title: Categories
+    url: /categories/
+
+# Collections
+collections:
+  datasets:
+    output: true
+    permalink: /datasets/:slug/
+  organizations:
+    output: true
+    permalink: /organizations/:slug/
+  dataset_categories:
+    output: true
+    permalink: /categories/:slug/
+
+# Default front matter
+defaults:
+  - scope:
+      path: ""
+      type: datasets
+    values:
+      layout: dataset
+  - scope:
+      path: ""
+      type: organizations
+    values:
+      layout: organization
+  - scope:
+      path: ""
+      type: dataset_categories
+    values:
+      layout: category
+
+# Plugins
+plugins:
+  - jekyll-github-metadata
+  - jekyll-paginate-v2
+  - jekyll-relative-links
+  - jekyll-titles-from-headings
+
+# Strict front matter validation
+strict_front_matter: true
+
+# Exclude from build
+exclude:
+  - datasets/
+  - scripts/
+  - Gemfile
+  - Gemfile.lock
+  - requirements.txt
+  - README.md
+  - vendor/
+
+# Markdown
+markdown: kramdown
+highlighter: rouge

@@ -1,0 +1,46 @@
+name: Generate CSV Previews
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "datasets/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate preview snippets
+        run: python scripts/generate_previews.py
+
+      - name: Check for changes in previews
+        id: diff
+        run: |
+          git diff --quiet _includes/previews/ || echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push updated previews
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add _includes/previews/
+          git commit -m "chore: regenerate CSV preview snippets [skip ci]"
+          git push

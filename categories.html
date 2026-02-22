@@ -1,0 +1,36 @@
+---
+layout: default
+title: Categories
+permalink: /categories/
+---
+
+<h1 class="mb-4">Categories</h1>
+<p class="text-muted mb-4">
+  Browse datasets by topic area.
+</p>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+  {% for cat in site.dataset_categories %}
+  {% assign cat_count = site.datasets | where: "category", cat.title | size %}
+  <div class="col">
+    <div class="card h-100 dataset-card">
+      <div class="card-body">
+        <h5 class="card-title">
+          <a href="{{ cat.url | relative_url }}" class="text-decoration-none stretched-link">
+            <i class="bi bi-tag me-1 text-primary"></i>{{ cat.title }}
+          </a>
+        </h5>
+        {% if cat.description %}
+        <p class="card-text text-muted small">{{ cat.description | truncate: 120 }}</p>
+        {% endif %}
+      </div>
+      <div class="card-footer bg-transparent">
+        <small class="text-muted">
+          <i class="bi bi-database me-1"></i>
+          {{ cat_count }} dataset{% if cat_count != 1 %}s{% endif %}
+        </small>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>

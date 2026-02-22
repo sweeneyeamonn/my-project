@@ -1,0 +1,24 @@
+---
+layout: default
+---
+
+<div class="mb-4">
+  <h1>{{ page.title }}</h1>
+  {% if page.description %}
+  <p class="lead text-muted">{{ page.description }}</p>
+  {% endif %}
+  {% if page.website %}
+  <a href="{{ page.website }}" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener noreferrer">
+    <i class="bi bi-box-arrow-up-right me-1"></i>Website
+  </a>
+  {% endif %}
+</div>
+
+{% assign org_datasets = site.datasets | where: "organization", page.title %}
+
+<h2 class="h4 mb-3">
+  Datasets
+  <span class="badge text-bg-secondary ms-1">{{ org_datasets.size }}</span>
+</h2>
+
+{% include datasets.html datasets=org_datasets %}
